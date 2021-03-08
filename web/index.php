@@ -12,14 +12,28 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 
 // Register view rendering
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
-    'twig.path' => __DIR__.'/views',
+	'twig.path' => __DIR__.'/views',
 ));
 
 // Our web handlers
 
 $app->get('/', function() use($app) {
-  $app['monolog']->addDebug('logging output.');
-  return $app['twig']->render('index.twig');
+	$app['monolog']->addDebug('logging output.');
+	return $app['twig']->render('index.twig');
+});
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+$app->post('/hash', function (Request $request) {
+	$password = $request->get('password');
+	$hash = $request->get('hash');
+	echo $hash . "\n";
+	if(password_verify($password, $hash)) {
+		return new Response('match', 200);
+	} else {
+		return new Response('invalid', 401);
+	}
 });
 
 $app->run();
