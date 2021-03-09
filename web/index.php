@@ -36,4 +36,10 @@ $app->post('/hash', function (Request $request) {
 	}
 });
 
+$app->post('/gethash', function (Request $request) {
+	$password = $request->get('password');
+	$hash = password_hash($password, PASSWORD_BCRYPT);
+	return new Response($hash, 200);
+});
+
 $app->run();
