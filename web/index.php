@@ -26,19 +26,34 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 $app->post('/hash', function (Request $request) {
+	// json
+	$data = json_decode($request->getContent(), true);
+	$request->request->replace(is_array($data) ? $data : array());
+	// parse
 	$password = $request->get('password');
 	$hash = $request->get('hash');
-	echo $hash . "\n";
+	// 	echo $password . "\n";
+	// 	echo $hash . "\n";
+	// process
 	if(password_verify($password, $hash)) {
-		return new Response('match', 200);
+		// return
+		return new Response('MATCH', 200);
 	} else {
-		return new Response('invalid', 401);
+		// return
+		return new Response('INVALID', 401);
 	}
 });
 
 $app->post('/gethash', function (Request $request) {
-	$password = $request->get('password');
+	// json
+	$data = json_decode($request->getContent(), true);
+	$request->request->replace(is_array($data) ? $data : array());
+	// parse
+	$password = $request->request->get('password');
+	//	echo $password . "\n";
+	// process
 	$hash = password_hash($password, PASSWORD_BCRYPT);
+	// return
 	return new Response($hash, 200);
 });
 
