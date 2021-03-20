@@ -57,4 +57,39 @@ $app->post('/gethash', function (Request $request) {
 	return new Response($hash, 200);
 });
 
+$app->post('/scraper', function (Request $request) {
+	// json
+	$data = json_decode($request->getContent(), true);
+	$request->request->replace(is_array($data) ? $data : array());
+	// parse
+	$url = $request->request->get('query');
+        $url_parsed = parse_url($url);
+
+        if (!isset($url_parsed["scheme"])) {
+            $url = "http://" . $url;
+        }
+        require_once('../includes/Embed/autoloader.php');
+        $dispatcher = new Embed\Http\CurlDispatcher([
+            CURLOPT_FOLLOWLOCATION => false,
+        ]);
+        $embed = Embed\Embed::create($url, null, $dispatcher);
+        if ($embed) {
+            $return = [];
+            $return['source_url'] = $url;
+            $return['source_title'] = $embed->title;
+            $return['source_text'] = $embed->description;
+            $return['source_type'] = $embed->type;
+            if ($return['source_type'] == "link") {
+                $return['source_host'] = $url_parsed['host'];
+                $return['source_thumbnail'] = $embed->image;
+            } else {
+                $return['source_html'] = $embed->code;
+                $return['source_provider'] = $embed->providerName;
+            }
+            return new Response(json_encode($return), 200);
+        } else {
+            return new Response(false, 500);
+        }
+});
+
 $app->run();
